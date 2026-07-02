@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dev Tools — Vibe Farnsworth Template</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { height: 100%; overflow: hidden; }
+      body { background: #0d0d0d; color: #e0e0e0; font-family: monospace; }
+      /* Fill the iframe exactly — no min-height:100vh, which forced the root
+         taller than the Farnsworth embed box and caused scrollbars in the
+         post / mobile / desktop preview panes. */
+      #root { height: 100%; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./main.jsx"></script>
+    <link rel="stylesheet" href="./style.css" />
+  </body>
+</html>

@@ -1,0 +1,44 @@
+/* Dev tools — iframe-fit overrides.
+   splash.tsx and game.tsx use Tailwind's `min-h-screen` which forces
+   100vh. Inside the Farnsworth iframe we want them to fill the iframe
+   container instead, so we neutralise min-height and make the root +
+   stage wrappers fill exactly, with overflow hidden so no scrollbars
+   appear in the post / mobile / desktop preview panes. */
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* The Shell renders a single stage wrapper per view mode as #root's child. */
+#root > * {
+  height: 100%;
+}
+
+/* Tailwind's `min-h-screen` = min-height: 100vh. Neutralise it so the
+   component fills its container instead of forcing the viewport height. */
+.min-h-screen {
+  min-height: 0 !important;
+}
+
+/* View-mode stages (Farnsworth canvas: ?view=post | mobile | desktop).
+   Fill the iframe and clip anything that would otherwise overflow. */
+.post-stage,
+.mobile-stage,
+.desktop-stage {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* The component rendered inside each stage (Splash / App) fills the stage
+   so its `justify-center` layout centres against the real iframe height. */
+.post-stage > *,
+.mobile-stage > *,
+.desktop-stage > * {
+  width: 100%;
+  height: 100%;
+}
