@@ -29,6 +29,26 @@ A starter to build web applications on Reddit's developer platform
 - `npm run login`: Logs your CLI into Reddit
 - `npm run type-check`: Type checks, lints, and prettifies your app
 
+### Farnsworth / local preview commands
+
+These are additions on top of the upstream template. They let you render
+`splash.tsx` and `game.tsx` in an ordinary browser (or inside the Farnsworth
+IDE canvas) without a Devvit playtest session:
+
+- `npm run dev:tools`: Starts a local Vite server on `http://localhost:5174`
+  that renders the client components with a stubbed Devvit client. No Reddit
+  login required.
+- `npm run build:tools`: Builds the dev-tools harness.
+- `npm run farnsworth:devvit`: Boots `dev:tools` in the background for the
+  Farnsworth IDE, writing `~/.cache/farnsworth-devvit.json` so the IDE can
+  auto-detect the running server and render the live canvas.
+
+## Farnsworth IDE
+
+This fork adds a local preview harness so the app can be developed and
+previewed inside the [Farnsworth](https://github.com/dolong) IDE (or any
+browser). See **[FARNSWORTH.md](./FARNSWORTH.md)** for setup and how it works.
+
 ## MCP Integration
 
 If you'd like to use the Devvit MCP server, please visit: https://developers.reddit.com/docs/next/guides/ai
