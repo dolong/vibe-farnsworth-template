@@ -1,0 +1,9 @@
+{
+  "name": "Smoke test: splash renders in the preview harness. Verifies the dev-tools server is serving the app and the splash screen mounts. Safe to run on a fresh clone.",
+  "steps": [
+    { "action": "reload", "waitMs": 2000, "_comment": "Reset state - every test starts with this" },
+    { "action": "waitFor", "selector": "h1", "timeout": 8000, "_comment": "Splash headline mounted" },
+    { "action": "eval", "expression": "(() => { const b = document.querySelector('button'); if (!b) throw new Error('no launch button rendered'); return 'launch button present: ' + b.textContent.trim(); })()", "_comment": "Assert the launch CTA rendered" },
+    { "action": "screenshot", "path": "/tmp/smoke-splash.png" }
+  ]
+}

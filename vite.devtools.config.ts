@@ -21,7 +21,9 @@ export default defineConfig({
   },
   server: {
     port: 5174,
-    open: true,
+    // Farnsworth boots this server for its in-app canvas iframe — don't pop a
+    // separate browser tab on Go Live.
+    open: false,
     proxy: {
       // Forward tRPC calls to the Devvit server (WEBBIT_PORT, default 3000).
       // Game.tsx uses trpc.init.get.query() so without this, dev-tools can't
