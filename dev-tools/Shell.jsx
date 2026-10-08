@@ -13,25 +13,36 @@ const TABS = [
 function readView() {
   const params = new URLSearchParams(window.location.search);
   const v = params.get('view');
-  if (v === 'post' || v === 'mobile' || v === 'desktop') return v;
+  if (v === 'post' || v === 'mobile' || v === 'desktop' || v === 'game') return v;
   return 'standalone';
+}
+
+// Post View renders the post's devvit.json entrypoint. Farnsworth passes
+// ?view=post&entry=<name> for each mock post, and the shim's
+// requestExpandedMode asks Farnsworth to switch to the expanded entry.
+// Add a line here for every new entrypoint in devvit.json.
+const ENTRIES = {
+  default: () => <Splash />,
+  game: () => <App />,
+};
+
+function readEntry() {
+  return new URLSearchParams(window.location.search).get('entry') || 'default';
 }
 
 export const Shell = () => {
   const view = useMemo(() => readView(), []);
+  const entry = useMemo(() => readEntry(), []);
   const [active, setActive] = useState('splash');
 
   // Farnsworth canvas iframe mode — render the requested component alone,
   // sized to fill the iframe. No tab UI, no shell chrome. The Farnsworth
   // canvas provides the surrounding Reddit / phone / desktop chrome.
   if (view === 'post') {
-    return (
-      <div className="post-stage">
-        <Splash />
-      </div>
-    );
+    const render = ENTRIES[entry] || ENTRIES.default;
+    return <div className="post-stage">{render()}</div>;
   }
-  if (view === 'mobile') {
+  if (view === 'mobile' || view === 'game') {
     return (
       <div className="mobile-stage">
         <App />

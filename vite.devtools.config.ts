@@ -25,10 +25,10 @@ export default defineConfig({
     // separate browser tab on Go Live.
     open: false,
     proxy: {
-      // Forward tRPC calls to the Devvit server (WEBBIT_PORT, default 3000).
-      // Game.tsx uses trpc.init.get.query() so without this, dev-tools can't
-      // load the real game. Splash.tsx is tRPC-free.
-      '/api/trpc': {
+      // Forward ALL /api calls (tRPC and plain Hono routes) to the Devvit
+      // server-runner that scripts/farnsworth-devvit.sh starts
+      // (WEBBIT_PORT, default 3000).
+      '/api': {
         target: `http://localhost:${process.env.WEBBIT_PORT ?? 3000}`,
         changeOrigin: true,
       },
