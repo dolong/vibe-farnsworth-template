@@ -85,18 +85,36 @@ This config is what makes local rendering possible. Key pieces:
 - **`@devvit/web/client` → `dev-tools/devvit-shim.ts`** alias — replaces the
   real Devvit client (which only works on reddit.com) with a stub, so
   `splash.tsx` / `game.tsx` import unmodified.
-- **`@src` → `src/`** alias — lets the harness import your real components.
+- **`@src` → `src/`** alias — lets the harness import your real code.
 - **`server.port: 5174`** — the fixed URL Farnsworth expects.
-- **`/api/trpc` proxy → `http://localhost:${WEBBIT_PORT ?? 3000}`** — forwards
-  tRPC calls to a running Devvit server, so `game.tsx` can load real data if
-  `npm run dev` is also running. `splash.tsx` is tRPC-free and works alone.
+- **`/api` proxy → `http://localhost:${WEBBIT_PORT ?? 3000}`** — forwards every
+  API call (tRPC and plain Hono routes) to the Devvit server-runner that
+  `scripts/farnsworth-devvit.sh` starts.
+- **`devvitEntries()` plugin** — reads `devvit.json` `post.entrypoints` and,
+  for each one, the module script named in its html file. Post View loads
+  `?view=post&entry=<name>` exactly like Reddit loads that entry's page.
+  **Adding an entrypoint to devvit.json is all it takes**: no harness edit,
+  and the standalone picker (open :5174 in a browser) gets a tab for it.
+- **`tailwindScanSrc()` plugin** — Tailwind v4 scans from Vite's root
+  (`dev-tools/`); this points it at `src/` so your classes are generated.
+
+Post types: a mock post created in Farnsworth carries `entry` + `postData`.
+Menu items that open a form (`showForm`) work too: Farnsworth shows the
+form and submits it to the matching `devvit.json` `forms` endpoint. The
+emulator stamps `devvit-user`, `devvit-user-name`, `devvit-subreddit-name`
+and `devvit-post-id` on every request, like Reddit.
 
 ### 2. The Devvit shim: `dev-tools/devvit-shim.ts`
 
 Stubs the `@devvit/web/client` API surface your components use:
 
-- `context` → fake `{ username, postId, subredditName }`
-- `requestExpandedMode`, `navigateTo`, `showToast`, `showForm` → console logs
+- `context` → `{ username, postId, postData, subredditName, entry }` from the
+  URL Farnsworth passes (postData is base64url JSON) and the emulator user
+- same-origin `fetch` gets `x-farnsworth-post-id`, so the server's
+  `context.postId` / `context.postData` match the post being previewed
+- `requestExpandedMode(event, entry)` → asks Farnsworth to open that entry
+- `getWebViewMode()` → `inline` in Post View, `expanded` otherwise
+- `navigateTo`, `showToast`, `showForm` → console logs
 - `useDevvitContext()` → returns the fake context
 
 This only applies under `dev:tools`. **Production builds use the real
@@ -171,7 +189,7 @@ dev-tools/
 - **Port 5174 in use / stale server** — stop it with
   `pkill -f vite.devtools.config.ts`, then re-run.
 - **`game.tsx` shows no data** — `game.tsx` needs tRPC. Run `npm run dev` (the
-  real Devvit server) alongside so the `/api/trpc` proxy has a backend; or set
+  real Devvit server) alongside so the `/api` proxy has a backend; or set
   `WEBBIT_PORT` if your Devvit server isn't on 3000. `splash.tsx` needs nothing.
 - **`npm: command not found` in the boot script** — the script prepends
   `/opt/homebrew/bin` to `PATH`; if node/npm live elsewhere, adjust the export

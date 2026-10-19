@@ -79,4 +79,10 @@ export const showForm = (form: unknown) => {
   console.log('[devvit-shim] showForm:', form);
 };
 
+export const getWebViewMode = (): 'inline' | 'expanded' => {
+  const mode = params.get('mode');
+  if (mode === 'inline' || mode === 'expanded') return mode;
+  return params.get('view') === 'post' ? 'inline' : 'expanded';
+};
+
 export const useDevvitContext = () => context;

@@ -1,65 +1,16 @@
-import { useState, useMemo } from 'react';
-import { Splash } from '@src/client/splash';
-import { App } from '@src/client/game';
+import { useState } from 'react';
 
-const TABS = [
-  { id: 'splash', label: 'Splash (Inline)', render: () => <Splash /> },
-  { id: 'game', label: 'Game (Expanded)', render: () => <App /> },
-];
+// Standalone harness (open http://localhost:5174 in a browser): one tab per
+// devvit.json entrypoint, each previewed in an iframe exactly like
+// Farnsworth's Post View loads it. Tabs come from devvit.json automatically.
+export const Shell = ({ entries }) => {
+  const names = Object.keys(entries);
+  const [active, setActive] = useState(names[0] || 'default');
+  const e = entries[active];
+  const src = `?view=${e && !e.inline ? 'desktop' : 'post'}&entry=${encodeURIComponent(active)}`;
 
-// Read ?view= from the URL so the Farnsworth canvas can link to specific
-// modes (post / mobile / desktop) without showing the dev-tools tab UI.
-// Defaults to 'standalone' which renders the tab picker for manual use.
-function readView() {
-  const params = new URLSearchParams(window.location.search);
-  const v = params.get('view');
-  if (v === 'post' || v === 'mobile' || v === 'desktop' || v === 'game') return v;
-  return 'standalone';
-}
-
-// Post View renders the post's devvit.json entrypoint. Farnsworth passes
-// ?view=post&entry=<name> for each mock post, and the shim's
-// requestExpandedMode asks Farnsworth to switch to the expanded entry.
-// Add a line here for every new entrypoint in devvit.json.
-const ENTRIES = {
-  default: () => <Splash />,
-  game: () => <App />,
-};
-
-function readEntry() {
-  return new URLSearchParams(window.location.search).get('entry') || 'default';
-}
-
-export const Shell = () => {
-  const view = useMemo(() => readView(), []);
-  const entry = useMemo(() => readEntry(), []);
-  const [active, setActive] = useState('splash');
-
-  // Farnsworth canvas iframe mode — render the requested component alone,
-  // sized to fill the iframe. No tab UI, no shell chrome. The Farnsworth
-  // canvas provides the surrounding Reddit / phone / desktop chrome.
-  if (view === 'post') {
-    const render = ENTRIES[entry] || ENTRIES.default;
-    return <div className="post-stage">{render()}</div>;
-  }
-  if (view === 'mobile' || view === 'game') {
-    return (
-      <div className="mobile-stage">
-        <App />
-      </div>
-    );
-  }
-  if (view === 'desktop') {
-    return (
-      <div className="desktop-stage">
-        <App />
-      </div>
-    );
-  }
-
-  // Standalone mode — tab picker for manual iteration in a browser tab.
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0d0d0d', color: '#e0e0e0', fontFamily: 'monospace' }}>
       <nav
         style={{
           display: 'flex',
@@ -69,14 +20,14 @@ export const Shell = () => {
           borderBottom: '1px solid #333',
         }}
       >
-        {TABS.map((tab) => (
+        {names.map((name) => (
           <button
-            key={tab.id}
+            key={name}
             type="button"
-            onClick={() => setActive(tab.id)}
+            onClick={() => setActive(name)}
             style={{
               padding: '6px 14px',
-              background: active === tab.id ? '#d93900' : '#2a2a2a',
+              background: active === name ? '#d93900' : '#2a2a2a',
               color: '#fff',
               border: 'none',
               borderRadius: 4,
@@ -85,23 +36,15 @@ export const Shell = () => {
               fontSize: 13,
             }}
           >
-            {tab.label}
+            {name}
+            {entries[name].inline ? ' (inline)' : ' (expanded)'}
           </button>
         ))}
-        <span
-          style={{
-            marginLeft: 'auto',
-            alignSelf: 'center',
-            color: '#666',
-            fontSize: 11,
-          }}
-        >
-          Dev Tools · vite · port 5174
+        <span style={{ marginLeft: 'auto', alignSelf: 'center', color: '#666', fontSize: 11 }}>
+          Dev Tools · entries from devvit.json
         </span>
       </nav>
-      <div style={{ flex: 1, overflow: 'auto', background: '#fff' }}>
-        {TABS.find((t) => t.id === active)?.render()}
-      </div>
+      <iframe key={src} title={active} src={src} style={{ flex: 1, border: 0, background: '#fff' }} />
     </div>
   );
 };
