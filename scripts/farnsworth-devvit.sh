@@ -26,7 +26,7 @@ URL="http://localhost:${PORT}"
 SERVER_URL="http://127.0.0.1:${SERVER_PORT}"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SERVER_LOG="$CACHE_DIR/farnsworth-${APP_TYPE}-server.log"
-REPO_HASH="$(printf '%s' "$REPO_ROOT" | xxd -p | tr -d '\n' | cut -c1-16)"
+REPO_HASH="$(printf '%s' "$REPO_ROOT" | shasum -a 256 | cut -c1-16)"  # full-path hash, matches Farnsworth devvitRepoKey()
 
 mkdir -p "$CACHE_DIR"
 
