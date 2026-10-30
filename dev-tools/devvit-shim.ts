@@ -55,16 +55,45 @@ if (params.get('postId')) {
   };
 }
 
-/**
- * On Reddit this opens the post's expanded entrypoint. Inside Farnsworth the
- * IDE swaps the Post View embed to that entry.
- */
-export const requestExpandedMode = (_event?: Event, entry = 'game') => {
+export type WebViewMode = 'inline' | 'expanded';
+export type WebViewModeListener = (mode: WebViewMode) => void;
+export type WebViewOptions = { title?: string };
+
+const postToIde = (message: Record<string, unknown>) => {
   if (window.parent && window.parent !== window) {
-    window.parent.postMessage({ type: 'devvit:requestExpandedMode', entry }, '*');
+    window.parent.postMessage(message, '*');
   } else {
-    console.log('[devvit-shim] requestExpandedMode:', entry);
+    console.log('[devvit-shim]', message);
   }
+};
+
+/**
+ * On Reddit this opens the post's expanded web view at `entry`, with an
+ * optional header title (Devvit 0.15). It also works while already expanded.
+ * Inside Farnsworth the IDE swaps the Post View embed to that entry and shows
+ * the title in its expanded header.
+ */
+export const requestExpandedMode = (_event?: Event, entry = 'game', options?: WebViewOptions) => {
+  postToIde({ type: 'devvit:requestExpandedMode', entry, title: options?.title });
+};
+
+/**
+ * On Reddit this returns the web view to inline. Like Reddit, it throws when
+ * already inline.
+ */
+export const exitExpandedMode = (_event?: Event) => {
+  if (getWebViewMode() === 'inline') throw Error('web view is already inlined');
+  postToIde({ type: 'devvit:exitExpandedMode' });
+};
+
+// Deprecated on Reddit. Farnsworth reloads the embed on every mode change, so
+// (as Reddit documents for destroyed web views) listeners never fire here.
+const modeListeners = new Set<WebViewModeListener>();
+export const addWebViewModeListener = (callback: WebViewModeListener) => {
+  modeListeners.add(callback);
+};
+export const removeWebViewModeListener = (callback: WebViewModeListener) => {
+  modeListeners.delete(callback);
 };
 
 export const navigateTo = (url: string) => {
@@ -79,7 +108,7 @@ export const showForm = (form: unknown) => {
   console.log('[devvit-shim] showForm:', form);
 };
 
-export const getWebViewMode = (): 'inline' | 'expanded' => {
+export const getWebViewMode = (): WebViewMode => {
   const mode = params.get('mode');
   if (mode === 'inline' || mode === 'expanded') return mode;
   return params.get('view') === 'post' ? 'inline' : 'expanded';

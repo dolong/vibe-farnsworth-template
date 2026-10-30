@@ -112,7 +112,9 @@ Stubs the `@devvit/web/client` API surface your components use:
   URL Farnsworth passes (postData is base64url JSON) and the emulator user
 - same-origin `fetch` gets `x-farnsworth-post-id`, so the server's
   `context.postId` / `context.postData` match the post being previewed
-- `requestExpandedMode(event, entry)` → asks Farnsworth to open that entry
+- `requestExpandedMode(event, entry, { title })` → asks Farnsworth to open that entry expanded, with the title in its expanded header (works while already expanded)
+- `exitExpandedMode(event)` → returns Post View to inline (throws when already inline, like Reddit)
+- `addWebViewModeListener` / `removeWebViewModeListener` → no-op stubs (deprecated on Reddit; the embed reloads on mode change)
 - `getWebViewMode()` → `inline` in Post View, `expanded` otherwise
 - `navigateTo`, `showToast`, `showForm` → console logs
 - `useDevvitContext()` → returns the fake context
